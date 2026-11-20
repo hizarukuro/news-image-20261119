@@ -1,26 +1,30 @@
-"""Front page of Thursday 19 November 2026: the midnight edition.
+#!/usr/bin/env python3
+"""The Daylight Edition - Thursday 19 November 2026.
 
-This program carries one finished front page. The picture sits beside
-this file in the repository as entry.png; running the program copies
-that picture, unchanged, into the output directory. The destination is
-the folder named by the MAKEFUN_OUTPUT_DIR environment variable, or a
-folder named "output" in the working directory when the variable is
-not set. The copy is exact: the same bytes come out on every run.
+Copies entry.png (which sits beside this file) into the output directory
+named by MAKEFUN_OUTPUT_DIR, or into ./output when that variable is unset.
+Standard library only.
 """
-
 import os
 import shutil
 import sys
 
+HERE = os.path.dirname(os.path.abspath(__file__))
 
-def main() -> int:
-    here = os.path.dirname(os.path.abspath(__file__))
-    picture = os.path.join(here, "entry.png")
-    target_dir = os.environ.get("MAKEFUN_OUTPUT_DIR") or "output"
-    os.makedirs(target_dir, exist_ok=True)
-    # copyfile moves the bytes without touching them, so the result is
-    # byte-for-byte the front page that was rendered for this entry.
-    shutil.copyfile(picture, os.path.join(target_dir, "entry.png"))
+
+def main():
+    src = os.path.join(HERE, "entry.png")
+    if not os.path.isfile(src):
+        print("entry.png not found beside main.py", file=sys.stderr)
+        return 1
+    out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR") or os.path.join(HERE, "output")
+    os.makedirs(out_dir, exist_ok=True)
+    dst = os.path.join(out_dir, "entry.png")
+    shutil.copyfile(src, dst)
+    if os.path.getsize(dst) != os.path.getsize(src):
+        print("copied file size mismatch", file=sys.stderr)
+        return 1
+    print("copied entry.png (%d bytes) to %s" % (os.path.getsize(dst), dst))
     return 0
 
 
